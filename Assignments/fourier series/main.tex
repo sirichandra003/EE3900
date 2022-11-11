@@ -4,9 +4,11 @@
 \usepackage{gensymb}
 \usepackage{xcolor}
 \usepackage{caption}
+\usepackage{circuitikz}
 %\usepackage{subcaption}
 %\doublespacing
 \singlespacing
+
 %\usepackage{graphicx}
 %\usepackage{amssymb}
 %\usepackage{relsize}
@@ -37,9 +39,6 @@
 %\usepackage{iithtlc}
 %\usepackage[framemethod=tikz]{mdframed}
 \usepackage{listings}
-\usepackage{tikz}
-\usetikzlibrary{shapes,arrows,positioning}
-\usepackage{circuitikz}
 \let\vec\mathbf
 
 
@@ -108,6 +107,8 @@
 \providecommand{\cbrak}[1]{\ensuremath{\left\{#1\right\}}}
 \providecommand{\lcbrak}[1]{\ensuremath{\left\{#1\right.}}
 \providecommand{\rcbrak}[1]{\ensuremath{\left.#1\right\}}}
+\providecommand{\rect}[1]{\text{rect}\ensuremath{\left(#1\right)}}
+\providecommand{\sinc}[1]{\text{sinc}\ensuremath{\left(#1\right)}}
 \theoremstyle{remark}
 \newtheorem{rem}{Remark}
 \newcommand{\sgn}{\mathop{\mathrm{sgn}}}
@@ -119,11 +120,11 @@
 \providecommand{\fourier}{\overset{\mathcal{F}}{ \rightleftharpoons}}
 \providecommand{\ztrans}{\overset{\mathcal{Z}}{ \rightleftharpoons}}
 %\providecommand{\hilbert}{\overset{\mathcal{H}}{ \rightleftharpoons}}
-\providecommand{\system}{\overset{\mathcal{H}}{ \longleftrightarrow}}
+%\providecommand{\system}{\overset{\mathcal{H}}{ \longleftrightarrow}}
+\providecommand{\system}[1]{\overset{\mathcal{#1}}{ \longleftrightarrow}}
 %\newcommand{\solution}[2]{\textbf{Solution:}{#1}}
 \newcommand{\solution}{\noindent \textbf{Solution: }}
 \providecommand{\dec}[2]{\ensuremath{\overset{#1}{\underset{#2}{\gtrless}}}}
-\providecommand{\diff}[2]{\ensuremath{\frac{d{#1}}{d{#2}}}}
 \numberwithin{equation}{section}
 %\numberwithin{equation}{subsection}
 %\numberwithin{problem}{subsection}
@@ -142,12 +143,62 @@
 \def\midbox#1{\raisebox{-0.5\baselineskip}[0in][0in]{#1}}
 \vspace{3cm}
 \title{
-Circuits and Transforms
+%\logo{
+%}
+Fourier Series
+%	\logo{Octave for Math Computing }
 }
-
+%\title{
+%	\logo{Matrix Analysis through Octave}{\begin{center}\includegraphics[scale=.24]{tlc}\end{center}}{}{HAMDSP}
+%}
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+%\title{Matrix Analysis through Octave}
+%
+%
+% author names and IEEE memberships
+% note positions of commas and nonbreaking spaces ( ~ ) LaTeX will not break
+% a structure at a ~ so this keeps an author's name from being broken across
+% two lines.
+% use \thanks{} to gain access to the first footnote area
+% a separate \thanks must be used for each paragraph as LaTeX2e's \thanks
+% was not built to handle multiple paragraphs
+%
 \author{ Siri Chandra Valasa
 }
-
+% note the % following the last \IEEEmembership and also \thanks - 
+% these prevent an unwanted space from occurring between the last author name
+% and the end of the author line. i.e., if you had this:
+% 
+% \author{....lastname \thanks{...} \thanks{...} }
+%                     ^------------^------------^----Do not want these spaces!
+%
+% a space would be appended to the last name and could cause every name on that
+% line to be shifted left slightly. This is one of those "LaTeX things". For
+% instance, "\textbf{A} \textbf{B}" will typeset as "A B" not "AB". To get
+% "AB" then you have to do: "\textbf{A}\textbf{B}"
+% \thanks is no different in this regard, so shield the last } of each \thanks
+% that ends a line with a % and do not let a space in before the next \thanks.
+% Spaces after \IEEEmembership other than the last one are OK (and needed) as
+% you are supposed to have spaces between the names. For what it is worth,
+% this is a minor point as most people would not even notice if the said evil
+% space somehow managed to creep in.
+% The paper headers
+%\markboth{Journal of \LaTeX\ Class Files,~Vol.~6, No.~1, January~2007}%
+%{Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for Journals}
+% The only time the second header will appear is for the odd numbered pages
+% after the title page when using the twoside option.
+% 
+% *** Note that you probably will NOT want to include the author's ***
+% *** name in the headers of peer review papers.                   ***
+% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
+% you desire.
+% If you want to put a publisher's ID mark on the page you can do it like
+% this:
+%\IEEEpubid{0000--0000/00\$00.00~\copyright~2007 IEEE}
+% Remember, if you use this you must call \IEEEpubidadjcol in the second
+% column for its text to clear the IEEEpubid mark.
+% make the title area
 \maketitle
 %\newpage
 \tableofcontents
@@ -158,434 +209,500 @@ Circuits and Transforms
 %\renewcommand{\theequation}{\thesection}
 \bigskip
 \begin{abstract}
-This manual provides a simple introduction to Transforms
+This manual provides a simple introduction to Fourier Series
 \end{abstract}
-\section{Definitions}
-\begin{enumerate}[label=\arabic*.,ref=\thesection.\theenumi]
-\numberwithin{equation}{section}
-\numberwithin{figure}{section}
-\item The unit step function is
+\section{Periodic Function}
+Let
 \begin{align}
-u(t) =
-\begin{cases}
-1 & t > 0
-\\
-\frac{1}{2} & t = 0
-\\
-0 & t < 0
-\end{cases}
+x(t) &= A_0\abs{\sin\brak{2\pi f_0 t}}
+\label{eq:10-orig-diff-def}
 \end{align}
-\item The Laplace transform of $g(t)$ is defined as
-\begin{align}
-G(s) = \int_{-\infty}^{\infty} g(t) e^{-st}\, dt
-\end{align}
-\end{enumerate}
-\section{Laplace Transform}
-\begin{enumerate}[label=\arabic*.,ref=\thesection.\theenumi]
-\numberwithin{equation}{section}
-\item In the circuit, the switch S is connected to position P for a long time so that the charge on the capacitor
-becomes $q_1 \, \mu C$. Then S is switched to position Q. After a long time, the charge on the capacitor is
-$q_2 \, \mu C$.
+\begin{enumerate}[label=\thesection.\arabic*
+,ref=\thesection.\theenumi]
+\item Plot $x(t)$.
+\\
+\solution
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/1.1.py
+\end{lstlisting}
 \begin{figure}[!ht]
-\centering
-\includegraphics[width=\columnwidth]{figs/ckt.jpg}
-\caption{}
-\label{fig:ckt}
+\includegraphics[width=\columnwidth]{figs/1.1.png}
+\caption{$x(t)$}
+\label{fig:xt}
 \end{figure}
-
-\item Find $q_1$ and Draw the circuit using latex-tikz.
-\\
-\solution
-\begin{figure}
-\begin{circuitikz} \draw
-(0,0) to[battery1, l=1 $V$, invert] (0,2)
--- (0.5,2) node[label={above:P}] {}
-to[R, l^=$1 \Omega$, *-*] (3,2)
-node[label={above:X}] {}
-to[R, l^=$2 \Omega$] (5.5,2)
-to[battery1, l=2 $V$] (5.5,0)
--- (0,0)
-(3,2) to[C, l=1 ${\mu}F$] (3,0)
--- (3,-0.5) node[ground, label={right:G}] {};
-\end{circuitikz}
-\caption{}
-\label{fig:ckt-q1}
-\end{figure}
-Let circuit be grounded at G then let relative potential at point
-X to be $V$.\\
-From KCL,
-\begin{align*}
-\frac{V - 1}{1} + \frac{V - 2}{2} = 0 \\
-V = \frac{4}{3}
-\end{align*}
-
-\item Show that the Laplace transform of $u(t)$ is $\frac{1}{s}$ and find the ROC.\\
-\solution
-We have,
+\item Show that $x(t)$ is periodic and find its period. \\
+\solution From Fig. \eqref{fig:xt}, we see that $x(t)$ is periodic. Further,
 \begin{align}
-{L}[u(t)]&= \int_{0}^{\infty}u(t)e^{-st}dt \\
-&= \int_{0}^{\infty}e^{-st}dt \\
-&= \frac{1}{s}, \quad \Re{(s)} > 0
-\label{eq:L-u}
+x\brak{t+\frac{1}{2f_0}} &= A_0\abs{\sin\brak{2\pi f_0\brak{t + \frac{1}{2f_0}}}} \\
+&= A_0\abs{\sin\brak{2\pi f_0t + \pi}} \\
+&= A_0\abs{\sin\brak{2\pi f_0t}} \\
+&= x_0\brak{t}
+\end{align}
+Hence the period of $x(t)$ is $\frac{1}{2f_0}$.
+\end{enumerate}
+\section{Fourier Series}
+Consider $A_0 =12$ and $f_0 = 50$ for all numerical calculations.
+\begin{enumerate}[label=\thesection.\arabic*,ref=\thesection.\theenumi]
+\item If
+%\cite{proakis_dsp}
+\begin{align}
+x(t) = \sum_{k = -\infty}^{\infty}c_ke^{\j2\pi kf_0 t}
+\label{eq:one-Z-complex}
+\end{align}
+show that
+\begin{align}
+c_k = f_0\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}x(t)e^{-\j2\pi kf_0 t}\, dt
+\label{eq:one-Z}
+\end{align} \\
+\solution We have for some $n \in \mathbb{Z}$,
+\begin{align}
+x(t)e^{-\j2\pi nf_0t} = \sum_{k = -\infty}^{\infty}c_ke^{\j2\pi (k - n)f_0 t}
+\end{align}
+But we know from the periodicity of $e^{\j2\pi kf_0t}$,
+\begin{align}
+\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}e^{\j2\pi kf_0 t}\, dt =
+\frac{1}{f_0}\delta\brak{k}
+\end{align}
+Thus,
+\begin{align}
+\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}x(t)e^{-\j2\pi nf_0 t}\, dt =
+\frac{c_n}{f_0} \\
+\implies c_n = f_0\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}x(t)e^{-\j2\pi nf_0 t}\, dt
+\end{align}
+\item Find $c_k$ for
+\eqref{eq:10-orig-diff-def} \\
+\solution Using \eqref{eq:one-Z},
+\begin{align}
+c_n &= f_0\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}A_0\abs{\sin\brak{2\pi f_0t}}
+e^{-\j2\pi nf_0t}\, dt \\
+&= f_0\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}A_0\abs{\sin\brak{2\pi f_0t}}
+\cos\brak{2\pi nf_0t}\, dt \nonumber \\
+&+ \j f_0\int_{-\frac{1}{2f_0}}^{\frac{1}{2f_0}}A_0
+\abs{\sin\brak{2\pi f_0t}}\sin\brak{2\pi nf_0t}\, dt \\
+&= 2f_0\int_{0}^{\frac{1}{2f_0}}A_0\sin\brak{2\pi f_0t}\cos\brak{2\pi nf_0t}\, dt \\
+&= f_0A_0\int_{0}^{\frac{1}{2f_0}}\brak{\sin\brak{2\pi\brak{n+1}f_0t}}\, dt \nonumber \\
+&- f_0A_0\int_{0}^{\frac{1}{2f_0}}\brak{\sin\brak{2\pi\brak{n-1}f_0t}}\, dt \\
+&= A_0\frac{1+\brak{-1}^n}{2\pi}\brak{\frac{1}{n+1} - \frac{1}{n-1}} \\
+&=
+\begin{cases}
+\frac{2A_0}{\pi\brak{1-n^2}} & n\ \text{even} \\
+0 & n\ \text{odd}
+\end{cases}
+\label{eq:ck-xt}
+\end{align}
+
+\item Verify
+\eqref{eq:10-orig-diff-def}
+using python. \\
+\solution
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/2.3.py
+\end{lstlisting}
+\begin{figure}[!ht]
+\includegraphics[width=\columnwidth]{figs/2.3.png}
+\caption{}
+\label{fig:ver-complex}
+\end{figure}
+\item Show that
+\begin{align}
+x(t) = \sum_{k = 0}^{\infty}\brak{a_k\cos{\j2\pi kf_0 t}+b_k\sin{\j2\pi kf_0 t}}
+\label{eq:one-Z-real}
+\end{align}
+and obtain the formulae for $a_k$ and $b_k$. \\
+\solution From \eqref{eq:one-Z-complex},
+\begin{align}
+x(t) &= \sum_{k = -\infty}^{\infty}c_ke^{\j2\pi kf_0 t} \\
+&= c_0 + \sum_{k = 1}^{\infty}c_ke^{\j2\pi kf_0t} + c_{-k}e^{-\j2\pi kf_0t} \\
+&= c_0 + \sum_{k = 1}^{\infty}\brak{c_k + c_{-k}}\cos\brak{2\pi kf_0t}  \nonumber \\
+&+ \sum_{k = 0}^{\infty}\brak{c_k - c_{-k}}\sin\brak{2\pi kf_0t}
+\end{align}
+Hence, for $k \ge 0$,
+\begin{align}
+a_k &=
+\begin{cases}
+c_0 & k = 0 \\
+c_k + c_{-k} & k > 0
+\end{cases} \label{eq:ak} \\
+b_k &= c_k - c_{-k}
+\label{eq:bk}
+\end{align}
+\item Find $a_k$ and $b_k$ for
+\eqref{eq:10-orig-diff-def} \\
+\solution From \eqref{eq:one-Z-complex}, we see that since $x(t)$ is even,
+\begin{align}
+x(-t) &= \sum_{k = -\infty}^{\infty}c_ke^{-\j2\pi kf_0 t} \\
+&= \sum_{k = -\infty}^{\infty}c_{-k}e^{\j2\pi kf_0t} \label{eq:sub} \\
+&= \sum_{k = -\infty}^{\infty}c_ke^{\j2\pi kf_0 t}
+\end{align}
+where we substitute $k := -k$ in \eqref{eq:sub}. Hence, we see that
+$c_k = c_{-k}$. So, from \eqref{eq:ak} and \eqref{eq:bk}, for $k \ge 0$,
+\begin{align}
+a_k &=
+\begin{cases}
+\frac{2A_0}{\pi} & k = 0 \\
+\frac{4A_0}{\pi\brak{1 - k^2}} & k > 0,\ k\ \text{even} \\
+0 & \text{otherwise}
+\end{cases} \label{eq:ak-xt}\\
+b_k &= 0
+\label{eq:bk-xt}
+\end{align}
+\item Verify
+\eqref{eq:one-Z-real}
+using python. \\
+\solution
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/2.6.py
+\end{lstlisting}
+\begin{figure}[!ht]
+\includegraphics[width=\columnwidth]{figs/2.6.png}
+\caption{Verification of \eqref{eq:one-Z-real}.}
+\label{fig:ver-real}
+\end{figure}
+\end{enumerate}
+\section{Fourier Transform}
+
+\begin{enumerate}[label=\thesection.\arabic*
+,ref=\thesection.\theenumi]
+\item
+\begin{align}
+\delta(t)&=0, \quad t\neq0
+\\
+\int_{-\infty}^{\infty}\delta(t) \, dt&= 1
+\end{align}
+\item The Fourier Transform of $g(t)$ is
+\begin{align}
+G(f)=\int_{-\infty}^{\infty}g(t)e^{-j2\pi ft}\,dt
 \end{align}
 \item Show that
 \begin{align}
-e^{-at}u(t) \system{L} \frac{1}{s+a}, \quad a > 0
-\end{align} and find the ROC. \\
-\solution
-\begin{align}
-{L}[e^{-at} u(t)]&= \int_{0}^{\infty}u(t)e^{-(s+a)t}dt \\
-&= \int_{0}^{\infty}e^{-(s+a)t}dt \\
-&= \frac{1}{s+a}, \quad \Re{(s)} > -a
-\label{eq:L-u-shift}
+g(t-t_0)&\system{F}G(f)e^{-j2\pi ft_0}
 \end{align}
-\item Now consider the following resistive circuit transformed from
-Fig. \ref{fig:ckt}
-\begin{figure}[!htb]
-\begin{center}
-\begin{circuitikz}
-\ctikzset{resistor = european}
-\draw
-(0,0) to[battery1, invert, l = $\frac{1}{s} V$] (0,3)
-node[label={above:Q}] {}
-to[R, l^=$R_1$, *-*] (3,3)
-node[label={above:X}] {}
-to[R, l^=$R_2$] (5.5,3)
-to[battery1, l= $\frac{2}{s} V$] (5.5,0)
--- (0,0)
-(3,3) to[R, l=$\frac{1}{sC_0}$] (3,0)
--- (3,-0.5) node[ground, label={right:G}] {};
-\end{circuitikz}
-\end{center}
-\caption{}
-\label{fig:sckt-q2}
-\end{figure}
-where
+\solution We write, substituting $u := t-t_0$,
 \begin{align}
-L[u(t)]=V_1(s)
-\\
-L[2u(t)]=V_2(s)
+g(t-t_0)&\system{F}\int_{-\infty}^{\infty}
+g(t-t_0)e^{-\j2\pi ft}\,dt \\
+&=\int_{-\infty}^{\infty}
+g(u)e^{-\j2\pi f(u + t_0)}\,du \\
+&=G(f)e^{-j2\pi ft_0}
 \end{align}
-Find the voltage across the capacitor $V_{C_0}(s)$.
-\solution
+where the last equality follows from \eqref{eq:fourier}.
+\item Show that
 \begin{align}
-V_1(s) = \frac{1}{s} \\
-V_2(s) = \frac{2}{s}
-\end{align}
-Let circuit be grounded at G then let relative potential at point
-X to be $V$.\\
-From KCL at X,
+G(t)&\system{F}g(-f)
+\end{align} \\
+\solution Using the definition of the Inverse Fourier Transform,
 \begin{align}
-&\frac{V - \frac{1}{s}}{R_1} + \frac{V - \frac{2}{s}}{R_2} + sC_0V = 0 \\
-&V\brak{\frac{1}{R_1} + \frac{1}{R_2} + sC_0} = \frac{1}{s}\brak{\frac{1}{R_1} + \frac{2}{R_2}} \\
-&V(s) = \frac{\frac{1}{R_1} + \frac{2}{R_2}}{s\brak{\frac{1}{R_1} + \frac{1}{R_2} + sC_0}} \\
-&= \frac{\frac{1}{R_1} + \frac{2}{R_2}}{\frac{1}{R_1} + \frac{1}{R_2}}\brak{\frac{1}{s} - \frac{1}{\frac{1}{C_0}\brak{\frac{1}{R_1} + \frac{1}{R_2}} + s}}
-\label{eq:V-s}
+g(t)=\int_{-\infty}^{\infty}G(f)e^{\j2\pi ft}\,df
+\label{eq:duality}
 \end{align}
-
-\item Find $v_{C_0}(t)$.  Plot using python. \\
-\solution
+Hence, setting $t := -f$ and $f := t$, which implies $df = dt$,
 \begin{align}
-L^{-1}[V(s)]&=L^{-1}[\frac{\frac{1}{R_1} + \frac{2}{R_2}}{\frac{1}{R_1} + \frac{1}{R_2}}\brak{\frac{1}{s} - \frac{1}{\frac{1}{C_0}\brak{\frac{1}{R_1} + \frac{1}{R_2}} + s}}] \\
-&=\frac{2R_1 + R_2}{R_1 + R_2}u(t)\brak{1 - e^{-\brak{\frac{1}{R_1} + \frac{1}{R_2}}\frac{t}{C_0}}} \\
-&=\frac{4}{3}\brak{1 - e^{-\brak{1.5 \times 10^6}t}}u(t)
+g(-f)&=\int_{-\infty}^{\infty}G(t)e^{-\j2\pi ft}\,dt \\
+\implies G(t)&\system{F}g(-f)
 \end{align}
+\item $\delta(t)\system{F}?$ \\
+\solution We have, from the definition of $\delta(t)$,
+\begin{align}
+\delta(t)&\system{F}\int_{-\infty}^{\infty}\delta(t)e^{-\j2\pi ft}\, dt \\
+&=\int_{-\infty}^{\infty}\delta(0)\, dt \\
+&=\int_{-\infty}^{\infty}\delta(t)\, dt = 1
+\label{eq:fourier-delta}
+\end{align}
+\item $e^{-j2\pi f_0t}\system{F}?$ \\
+\solution Suppose $g(t)\system{F}G(f)$. Then,
+\begin{align}
+g(t)e^{\j2\pi f_0t}&\system{F}\int_{-\infty}^{\infty}
+g(t)e^{-\j2\pi\brak{f-f_0}t}\, dt \\
+&=F(f-f_0)
+\label{eq:f-shift}
+\end{align}
+Using \eqref{eq:duality} in \eqref{eq:fourier-delta}, $1\system{F}\delta(-f)$.
+Hence, applying \eqref{eq:f-shift},
+\begin{align}
+e^{-\j2\pi f_0t}\system{F}\delta(-(f+f_0)) = \delta(f+f_0)
+\label{eq:fourier-exp}
+\end{align}
+\item $\cos(2\pi f_0t)\system{F}?$ \\
+\solution Using the linearity of the Fourier
+Transform and \eqref{fourier-exp},
+\begin{align}
+\cos\brak{2\pi f_0t} &= \frac{1}{2}
+\brak{e^{\j2\pi f_0t} + e^{-\j2\pi f_0t}} \\
+&\system{F}\frac{1}{2}\brak{\delta\brak{f+f_0} + \delta\brak{f-f_0}}
+\end{align}
+\item Find the Fourier Transform of $x(t)$ and plot it. Verify using python. \\
+\solution Substituting \eqref{eq:ck-xt} in \eqref{eq:one-Z-complex},
+\begin{align}
+x(t)&\system{F}\sum_{k=-\infty}^{\infty}c_k\delta\brak{f+kf_0} \\
+&=\frac{2A_0}{\pi}\sum_{k=-\infty}^{\infty}\frac{\delta\brak{f+2kf_0}}{1-4k^2}
+\label{eq:fourier-xt}
+\end{align}
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/3.9.py
+\end{lstlisting}
 \begin{figure}[!ht]
-\centering
-\includegraphics[width=\columnwidth]{figs/2_6.png}
-\caption{$v_{C_0}(t)$ before the switch is flipped}
-\label{fig:v1-t}
+\includegraphics[width=\columnwidth]{figs/3.8.png}
+\caption{Fourier Transform of $x(t)$.}
+\label{eq:fig-fourier-xt}
 \end{figure}
+\item Show that
+\begin{align}
+\rect{t} \system{F} \sinc{t}
+\end{align}
+Verify using python. \\
+\solution We write
+\begin{align}
+\rect{t}&\system{F}\int_{-\infty}^{\infty}\rect{t}e^{-\j2\pi ft}\, dt \\
+&=\int_{-\frac{1}{2}}^{\frac{1}{2}}e^{-\j2\pi ft}\, dt \\
+&=\frac{e^{\j\pi f} - e^{-\j\pi f}}{\j2\pi f} = \frac{\sin{\pi f}}{\pi f} = \sinc{f}
+\label{eq:fourier-rect}
+\end{align}
+The python code \texttt{codes/3.9.py} verifies \eqref{eq:fourier-rect}.
+\begin{figure}[!ht]
+\includegraphics[width=\columnwidth]{figs/3.9.png}
+\caption{Fourier Transform of $\rect(t)$.}
+\label{eq:fig-fourier-rect}
+\end{figure}
+
+\item
+$     \sinc{t}\system{F} ?$. Verify using python.\\
+\solution From \eqref{eq:duality}, we have
+\begin{align}
+\sinc{t}\system{F}\rect(-f)=\rect{f}
+\label{eq:fourier-sinc}
+\end{align}
+Since $\rect{f}$ is an even function.
 \begin{lstlisting}
-$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/Circuits%20and%20transforms/codes/2.6.py
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/3.10.py
 \end{lstlisting}
-\item Verify your result using ngspice.
-\solution
-\begin{lstlisting}
-$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/Circuits%20and%20transforms/codes/2.7.cir
-\end{lstlisting}
+\begin{figure}[!ht]
+\includegraphics[width=\columnwidth]{figs/3.10.png}
+\caption{Fourier Transform of $\sinc(t)$.}
+\label{eq:fig-fourier-sinc}
+\end{figure}
 \end{enumerate}
-\section{Initial Conditions}
-\begin{enumerate}[label=\arabic*.,ref=\thesection.\theenumi]
-\numberwithin{equation}{section}
-\item Find $q_2$ in Fig.
-\ref{fig:ckt}.
-\\
-\solution
-\\
-The equivalent circuit at steady state when the switch is at Q is shown
-below.
-\begin{figure}[!htb]
-\begin{center}
-\begin{circuitikz} \draw
-(0,0) -- (0,2)
-node[label={above:Q}] {}
-to[R, l^=$1 \Omega$, *-*] (3,2)
-node[label={above:X}] {}
-to[R, l^=$2 \Omega$] (5.5,2)
-to[battery1, l=2 $V$] (5.5,0)
--- (0,0)
-(3,2) to[C, l=1 ${\mu}F$] (3,0)
--- (3,-0.5) node[ground, label={right:G}] {};
-\end{circuitikz}
-\end{center}
-\caption{}
-\label{fig:ckt-q2}
-\end{figure}
-Since capacitor behaves as an open circuit, we use KCL at X.
+\section{Filter}
+\begin{enumerate}[label=\thesection.\arabic*
+,ref=\thesection.\theenumi]
+\item Find $H(f)$ which transforms $x(t)$ to DC 5V.\\
+\solution The function $H(f)$ is a low pass filter which filters out
+even harmonics and leaves the zero frequency component behind.
+The rectangular function represents an ideal low pass filter.
+Suppose the cutoff frequency is $f_c = 50$ Hz, then
 \begin{align}
-\frac{V - 0}{1} + \frac{V - 2}{2} = 0
-\implies V = {\frac{2}{3}    }
+H(f) = \rect{\frac{f}{2f_c}} =
+\begin{cases}
+1 & \abs{f} < f_c \\
+0 & \textrm{otherwise}
+\end{cases}
+\label{eq:Hf}
 \end{align}
-and hence, $ q_2 = \frac{2}{3} {\mu}C $. \\
-\item Draw the equivalent $s$-domain resistive circuit when S is switched to position Q.  Use variables $R_1, R_2, C_0$ for the passive elements.
-Use latex-tikz.
-\label{prob:init}
+Multiplying by a scaling factor to get DC 5V,
+\begin{align}
+H(f) = \frac{\pi V_0}{2A_0}\rect{\brak{\frac{f}{2f_c}}}
+\end{align}
+where $V_0 = 5$ V.
+\item Find $h(t)$. \\
+\solution Suppose $g(t)\system{F}G(f)$. Then, for some
+nonzero $a \in \mathbb{R}$
+\begin{align}
+g(at)&\system{F}\int_{-\infty}^{\infty}g(at)e^{-\j2\pi ft}\, dt \\
+&=\frac{1}{a}\int_{-\infty}^{\infty}g(u)e^{\brak{-\j2\pi \frac{f}{a}t}}\, dt \\
+&=\frac{1}{a}G\brak{\frac{f}{a}}
+\label{eq:t-scaling}
+\end{align}
+where we have substituted $u := at$. Using
+\eqref{eq:t-scaling} of the Fourier Transform in \eqref{eq:Hf}, \\
+$h(t) = 2*f_c \sinc{2*f_ct} $
+
+\item Verify your result using through convolution. \\
+\solution 
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/4.3.py
+\end{lstlisting}
 \begin{figure}[!ht]
-\begin{center}
-\begin{circuitikz}
-\ctikzset{resistor = european}
-\draw
-(0,0) -- (0,3)
-node[label={above:Q}] {}
-to[R, l^=$R_1$, *-*] (3,3)
-node[label={above:X}] {}
-to[R, l^=$R_2$] (5.5,3)
-to[battery1, l= $\frac{2}{s} V$] (5.5,0)
--- (0,0)
-(3,3) to[battery1, l=$\frac{4}{3s} V$] (3,2) to[R, l=$\frac{1}{sC_0}$] (3,0)
--- (3,-0.5) node[ground, label={right:G}] {};
-\end{circuitikz}
-\end{center}
-\caption{}
-\label{fig:sckt-q2}
+\includegraphics[width=\columnwidth]{figs/4.3.png}
+\caption{Convolution of the two signals.}
+\label{eq:fig-conv}
 \end{figure}
-\\
-\item $V_{C_0}(s)$ = ?
-\\
-\solution
-Using KCL at node X in Fig. \ref{fig:sckt-q2}
-\begin{align}
-\frac{V - 0}{R_1} + \frac{V - \frac{2}{s}}{R_2} + sC_0\brak{V - \frac{4}{3s}} = 0 \\
-\implies V_{C_0}(s) = \frac{\frac{2}{sR_2} + \frac{4C_0}{3}}{\frac{1}{R_1} + \frac{2}{R_2} + sC_0}
-\label{eq:v2-s}
-\end{align}
-\item $v_{C_0}(t)$ = ? Plot using python.
-\\
-\solution
-\\
-From \eqref{eq:v2-s},
-\begin{align}
-&V_{C_0}(s) = \frac{4}{3}\brak{\frac{1}{\frac{1}{C_0}\brak{\frac{1}{R_1} + \frac{1}{R_2}}+s}} \nonumber \\
-&+ \frac{2}{R_2\brak{\frac{1}{R_1} +\frac{1}{R_2}}}\brak{\frac{1}{s} - \frac{1}{\frac{1}{C_0}\brak{\frac{1}{R_1} + \frac{1}{R_2}} + s}}
-\end{align}
-Applying Inverse Laplace Transform on both sides
-\begin{align}
-&L^{-1}[V_{C_0}(t)]=v_{C_0}(t) = \frac{4}{3}e^{-\brak{\frac{1}{R_1} + \frac{1}{R_2}}\frac{t}{C_0}}u(t) \nonumber \\
-&+ \frac{2}{R_2\brak{\frac{1}{R_1}+\frac{1}{R_2}}}\brak{1 - e^{-\brak{\frac{1}{R_1} + \frac{1}{R_2}}\frac{t}{C_0}}}u(t) \label{eq:f1}
-\end{align}
-Substituting $R_1, R_2, C_0$ in \eqref{eq:f1}
-\begin{align}
-L^{-1}[V_{C_0}(t)] =v_{C_0}(t)= \frac{2}{3}\brak{1 +e^{-\brak{1.5 \times 10^6}t}}u(t)
-\label{eq:v2-t}
-\end{align}
-\begin{figure}[!htb]
-\includegraphics[width=\columnwidth]{figs/3_4.png}
-\caption{$v_{C_0}(t)$ after the switch is flipped}
-\label{fig:v2-t}
-\end{figure} \\ \\
-\begin{lstlisting}
-$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/Circuits%20and%20transforms/codes/3.4.py
-\end{lstlisting}
-\item Verify your result using ngspice. \\
-\solution
-\begin{lstlisting}
-$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/Circuits%20and%20transforms/codes/3.5.cir
-\end{lstlisting}
-\item Find $v_{C_0}(0-), v_{C_0}(0+)$ and  $v_{C_0}(\infty) $. \\
-\solution From the initial conditions,
-\begin{align}
-v_{C_0}(0-) = \frac{q_1}{C} = {\frac{4}{3}}
-\end{align}
-From \eqref{eq:v2-t},
-\begin{align}
-v_{C_0}(0+) &= \lim_{t \to 0+}v_{C_0}(t) = {\frac{4}{3}} \\
-v_{C_0}(\infty) &= \lim_{t \to \infty}v_{C_0}(t) = {\frac{2}{3}}
-\end{align}
-\item Obtain the Fig. in problem
-\ref{prob:init}
-using the equivalent differential equation.
-\\
-\solution The equivalent circuit in the $t$-domain is shown below.
-\begin{figure}[!htb]
-\begin{center}
-\begin{circuitikz}
-\draw
-(0,0) -- (0,3)
-node[label={above:Q}] {}
-to[R, l^=$R_1$, *-*, i = $i_1$] (3,3)
-node[label={above:X}] {}
-to[R, l^=$R_2$, i = $i_3$] (5.5,3)
-to[battery1, l= ${2}$] (5.5,0)
--- (0,0)
-(3,3) to[battery1, l=$\frac{4}{3} V$] (3,2) to[C, l=$C_0$, i = $i_2$] (3,0) ;
-\end{circuitikz}
-\end{center}
-\caption{}
-\label{fig:tckt-q2}
-\end{figure}
-From KCL and KVL,
-\begin{align}
-&i_1 = i_2 +i_3 \\
-&i_1R_1 + \frac{4}{3} + \frac{1}{C_0}\int_{0}^{t}i_2dt = 0 \\
-&\frac{4}{3} + \frac{1}{C_0}\int_{0}^{t}i_2dt - i_3R_2 - 2 = 0
-\end{align}
-Taking Laplace Transforms on both sides and using the properties of Laplace Transforms,
-\begin{align}
-&I_1 = I_2 +I_3 \label{eq:s1}\\
-&I_1R_1 + \frac{4}{3} + \frac{1}{sC_0}I_2 = 0 \\
-&\frac{4}{3} + \frac{1}{sC_0}I_2 - I_3R_2 - 2 = 0 \label{eq:s3} \\
-\end{align}
-where $i(t) \system{L} I(s)$. Note that the capacitor is equivalent to a resistive element of resistance $R_C = \frac{1}{sC_0}$ in the $s$-domain. Equations \eqref{eq:s1} - \eqref{eq:s3} precisely describe Fig. \ref{fig:sckt-q2}.
 \end{enumerate}
+\section{Filter Design}
+\begin{enumerate}[label=\thesection.\arabic*
+,ref=\thesection.\theenumi]
+\item Design a Butterworth filter for $H(f)$.
+\solution The Butterworth filter has an amplitude response
+given by
+\begin{align}
+    \abs{H\brak{f}}^2 = \frac{1}{\brak{1 + \brak{\frac{f}{f_c}}^{2n}}}
+\end{align}
+where $n$ is the order of the filter and $f_c$ is the cutoff
+frequency. The attenuation at frequency $f$ is given by 
+\begin{align}
+    A &= -10\log_{10}\abs{H\brak{f}}^2 \\
+      &= -20\log_{10}\abs{H\brak{f}}
+    \label{eq:loss}
+\end{align}
+We consider the following design parameters for our
+lowpass analog Butterworth filter:
+\begin{enumerate}
+    \item Passband edge, $f_p = 50$ Hz
+    \item Stopband edge, $f_s = 100$ Hz
+    \item Passband attenuation, $A_p = -1$ dB
+    \item Stopband attenuation, $A_s = -20$ dB
+\end{enumerate}
+We are required to find a desriable order $n$ and cutoff
+frequency $f_c$ for the filter. From \eqref{eq:loss},
+\begin{align}
+    A_p &= -10\log_{10}\sbrak{1 + \brak{\frac{f_p}{f_c}}^{2n}} \\
+    A_s &= -10\log_{10}\sbrak{1 + \brak{\frac{f_s}{f_c}}^{2n}}
+\end{align}
+Thus,
+\begin{align}
+    \brak{\frac{f_p}{f_c}}^{2n} = 10^{-\frac{A_p}{10}} - 1 \label{eq:fc1} \\
+    \brak{\frac{f_s}{f_c}}^{2n} = 10^{-\frac{A_s}{10}} - 1 \label{eq:fc2}
+\end{align}
+Therefore, on dividing the above equations and solving for $n$,
+\begin{align}
+    n = \frac{\log\brak{10^{-\frac{A_s}{10}} - 1} - 
+    \log\brak{10^{-\frac{A_p}{10}} - 1}}{2\brak{\log{f_s} - \log{f_p}}}
+\end{align}
+In this case, making appropriate susbstitutions gives $n = 4.29$.
+Hence, we take $n = 5$. Solving for $f_c$ in \eqref{eq:fc1} and
+\eqref{eq:fc2},
+\begin{align}
+    f_{c1} = f_p\sbrak{10^{-\frac{A_p}{10}} - 1}^{-\frac{1}{2n}} = {57.23} Hz\\
+    f_{c2} = f_s\sbrak{10^{-\frac{A_s}{10}} - 1}^{-\frac{1}{2n}} = {63.16} Hz
+\end{align}
+Hence, we take $f_c = \sqrt{f_{c1}f_{c2}} = {60} Hz$ approximately.
 
-\section{Bilinear Transform}
-\begin{enumerate}[label=\arabic*.,ref=\thesection.\theenumi]
-\numberwithin{equation}{section}
-\item In Fig.
-\ref{fig:ckt},consider the case when $S$ is switched to $Q$ right in the beginning. Formulate the differential equation.\\
-\solution
-\\
-The equivalent circuit in the $t$-domain is shown below.
+\item Design a Chebyschev filter for $H(f)$.
+\solution The Chebyshev filter has an amplitude response
+given by
+\begin{align}
+    \abs{H\brak{f}}^2 = \frac{1}{\brak{1 + \epsilon^2C_n^2\brak{\frac{f}{f_c}}^2}}
+\end{align}
+where 
+\begin{enumerate}
+    \item $n$ is the order of the filter
+    \item $\epsilon$ is the ripple
+    \item $f_c$ is the cutoff frequency 
+    \item $C_n = \cosh^{-1}\brak{n\cosh{x}}$ denotes 
+    the n\textsuperscript{th} order Chebyshev polynomial,
+    given by
+    \begin{align}
+        c_n(x) =
+        \begin{cases}
+            \cos\brak{n\cos^{-1}x} & \abs{x} \le 1 \\
+            \cosh\brak{n\cosh^{-1}x} & \textrm{otherwise}
+        \end{cases}
+        \label{eq:chebypol}
+    \end{align}
+\end{enumerate}
+We are given the following specifications:
+\begin{enumerate}
+    \item Passband edge (which is equal to 
+    cutoff frequency), $f_p = f_c$
+    \item Stopband edge, $f_s$
+    \item Attenuation at stopband edge, $A_s$
+    \item Peak-to-peak ripple $\delta$ in the passband.
+    It is given in dB and is related to $\epsilon$ as
+    \begin{align}
+        \delta = 10\log_{10}\brak{1 + \epsilon^2}
+        \label{eq:delta-eps}
+    \end{align}
+\end{enumerate}
+and we must find a suitable $n$ and $\epsilon$. From
+\eqref{eq:delta-eps},
+\begin{align}
+    \epsilon = \sqrt{10^{\frac{\delta}{10}} - 1}
+    \label{eq:epsilon-del}
+\end{align}
+At $f_s > f_p = f_c$, using \eqref{eq:chebypol}, $A_s$ is given by
+\begin{align}
+    A_s = -10\log_{10}\sbrak{1 + \epsilon^2c_n^2\brak{\frac{f_s}{f_p}}} \\
+    \implies c_n\brak{\frac{f_s}{f_p}} = \frac{\sqrt{10^{-\frac{A_s}{10}} - 1}}{\epsilon} \\
+    \implies n = \frac{\cosh^{-1}\brak{\frac{\sqrt{10^{-\frac{A_s}{10}} - 1}}{\epsilon}}}
+    {\cosh^{-1}\brak{\frac{f_s}{f_p}}}
+\end{align}
+We consider the following specifications:
+\begin{enumerate}
+    \item Passband edge/cutoff frequency, $f_p = f_c = {60}Hz$.
+    \item Stopband edge, $f_s = {100}$.
+    \item Passband ripple, $\delta = {0.5}dB$
+    \item Stopband attenuation, $A_s = {-20}dB$
+\end{enumerate}
+$\epsilon = 0.35$ and $n = 3.68$. Hence, we take $n = 4$
+as the order of the Chebyshev filter.
 
-\begin{figure}[!htb]
-\begin{center}
-\begin{circuitikz}
-\draw
-(0,0) -- (0,3)
-node[label={above:Q}] {}
-to[R, l^=$R_1$, *-*, i = $i_1$] (3,3)
-node[label={above:X}] {}
-to[R, l^=$R_2$, i = $i_3$] (5.5,3)
-to[battery1, l= $V_2$] (5.5,0)
--- (0,0)
-(3,3) to[C, l=$C_0$, i = $i_2$] (3,0) ;
-\end{circuitikz}
-\end{center}
-\caption{}
-\label{fig:tckt-q4}
-\end{figure}
-Applying KCL and KVL,
+\item Design a circuit for your Butterworth filter.
+\solution Looking at the table of normalized element values
+$L_k$, $C_k$, of the Butterworth filter for order 5, and noting
+that de-normalized values $L_k'$ and $C_k'$ are given by
 \begin{align}
-&i_1 = i_2 + i_3  \label{eq:re} \\
-&i_1R_1 = - \frac{1}{C_0}\int_0^ti_2\, dt  \label{eq:i1} \\
-&i_3R_2 = \frac{1}{C_0}\int_0^ti_2\, dt - 2 \label{eq:i3}
+    C_k' = \frac{C_k}{\omega_c} \qquad L_k' = \frac{L_k}{\omega_c}
 \end{align}
-Differentiating \eqref{eq:re}, \eqref{eq:i1}, \eqref{eq:i3},
+De-normalizing these values, taking $f_c = 60$ Hz,
 \begin{align}
-&\diff{i_1}{t} = \diff{i_2}{t} + \diff{i_3}{t} \label{eq:diff1}\\
-&R_1\diff{i_1}{t} =- \frac{i_2}{C_0} \label{eq:diff2}\\
-&R_2\diff{i_3}{t} = \frac{i_2}{C_0} \label{eq:diff3}
+    C_1' = C_5' = {1.64}mF \\
+    L_2' = L_4' = {4.29}mF \\
+    C_3' = {5.31}mF \\
 \end{align}
-From \eqref{eq:diff1},\eqref{eq:diff3}, \eqref{eq:diff2},
-\begin{align}
-&\diff{i_1}{t}=\brak{\frac{-R_2}{R_1}}\diff{i_3}{t}
-\end{align}
-\begin{align}
-\therefore    &\brak{\frac{-R_2}{R_1}}\diff{i_3}{t}=\diff{i_2}{t} + \diff{i_3}{t} \\
-&\diff{i_2}{t}  + \brak{1 + \frac{R_2}{R_1}}\diff{i_3}{t} = 0 \\
-&\diff{i_2}{t} + \brak{1 + \frac{R_2}{R_1}}\frac{i_2}{R_2C_0} = 0 \\
-&\diff{i_2}{t} + \brak{\frac{1}{R_1} + \frac{1}{R_2}}\frac{i_2}{C_0} = 0 \\
-&\diff{i_2}{t} + \frac{i_2}{\tau} = 0
-\label{eq:diff-eqn-init}
-\end{align}
-where $\tau = \frac{C_0R_1R_2}{R_1 + R_2}$
-Integrating \eqref{eq:diff-eqn-init} w.r.t $t$ and at $t=0$, ${i_2}=\frac{V_2}{R_2}$
-\begin{align}
-&C_0\diff{V}{t} - \frac{V_2}{R_2} + \frac{C_0V}{\tau}= 0 \\
-&\diff{V}{t} + \frac{V}{\tau} = \frac{V_2}{C_0R_2}
-\label{eq:diff-eqn}
-\end{align}
-\item Find $H(s)$ considering the ouput voltage at the capacitor.\\
-\solution
-\begin{figure}[!htb]
-\begin{center}
-\begin{circuitikz}
-\ctikzset{resistor = european}
-\draw
-(0,0) -- (0,3)
-node[label={above:Q}] {}
-to[R, l^=$R_1$, *-*] (3,3)
-node[label={above:X}] {}
-to[R, l^=$R_2$] (5.5,3)
-to[battery1, l= $V_2(s)$] (5.5,0)
--- (0,0)
-(3,3) to[R, l=$\frac{1}{sC_0}$] (3,0)
--- (3,-0.5) node[ground, label={right:G}] {};
-\end{circuitikz}
-\end{center}
-\caption{Transforming Fig. \ref{fig:tckt-q4} to $s$-domain}
-\label{fig:sckt-q4}
-\end{figure}
-$H(s) = \frac{V(s)}{V_2(s)}$,
-\begin{align}
-&\frac{V}{R_1} + \frac{V}{\frac{1}{sC_0}} + \frac{V - V_2}{R_2} = 0 \\
-&H(s)\brak{\frac{1}{R_1} + \frac{1}{R_2} + sC_0} = \frac{1}{R_2} \\
-&H(s) = \frac{\frac{1}{R_2}}{\frac{1}{R_1} + \frac{1}{R_2} + sC_0}
-\label{eq:Hs}
-\end{align}
-\item Plot $H(s)$. What kind of filter is it? \\
-\solution
+The L-C network is shown in Fig. \ref{fig:butter-filter}.
 \begin{figure}[!ht]
-\includegraphics[width=\columnwidth]{figs/4_3.png}
-\caption{Plot of $H(s)$.}
-\label{fig:Hs}
+    \centering
+    \begin{circuitikz} 
+        \draw (0,0) to[short, o-o] (7,0);
+        \draw (0,2) to [short, o-] (1,2) to [L, l=4.29 mH] (3.5,2) to [L, l=4.29 mH] (6,2) to[short, -o] (7,2);
+        \draw (1,0) to[C, l=1.64 mF] (1,2);
+        \draw (3.5,0) to[C, l=5.31 mF] (3.5,2);
+        \draw (6,0) to[C, l=1.64 mF] (6,2);
+    \end{circuitikz}
+    \caption{L-C Butterworth Filter}
+    \label{fig:butter-filter}
 \end{figure}
-$H(s)$ is a low-pass filter.
+\begin{figure}
+    \includegraphics[width=\columnwidth]{figs/5.3.png}
+    \caption{Simulation of Butterworth filter.}
+    \label{fig:sim-butter}
+\end{figure}
 \begin{lstlisting}
-$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/Circuits%20and%20transforms/codes/4.3.py
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/5.3.py
 \end{lstlisting}
-\item Using trapezoidal rule for integration, formulate the difference equation
-by considering
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/5.3.cir
+\end{lstlisting}
+\item Design a circuit for your Chebyschev filter.
+\solution Looking at the table of normalized element values
+of the Chebyshev filter for order 3 and 0.5 dB ripple,
+and de-nomrmalizing those values, taking $f_c = {50}Hz$,
 \begin{align}
-y(n) = y(t)\vert_{t=n}
+    C_1' = {4.43}mF \\
+    L_2' = {3.16}mH \\
+    C_3' = {6.28}mF \\
+    L_4' = {2.23}mH
 \end{align}
-\solution
-Integrating \eqref{eq:diff-eqn} between limits $n$ to $n+1$
-and applying the trapezoidal formula,
-\begin{align}
-v(n+1) - v(n) + \frac{v(n) + v(n+1)}{2\tau} = \nonumber\\
-\frac{V_2\brak{u(n)+u(n+1)}}{C_0R_2} \\
-v(n)\brak{2\tau+1} + v(n-1)\brak{2\tau-1} = \nonumber\\
-\frac{V_2\tau\brak{u(n)+u(n-1)}}{C_0R_2}
-\label{eq:difference-eqn}
-\end{align}
-for $n > 0$, where $v(0) = 0$.
-\item Find $H(z)$. \\
-\solution Note that for the input voltage, $v_i(n) = 2u(n)$ and
-so, $V_i(z) = \frac{2}{1-z^{-1}}$. Applying the Z-transform
-on both sides of \eqref{eq:difference-eqn},
-\begin{align}
-V(z)\sbrak{(2\tau + 1) - z^{-1}(2\tau - 1)} \nonumber \\
-= \frac{\tau\brak{1 + z^{-1}}V_i(z)}{C_0R_2}
-\end{align}
-Hence,
-\begin{align}
-H(z) = \frac{\tau\brak{1+z^{-1}}}{C_0R_2\brak{\brak{2\tau+1}-\brak{2\tau-1}z^{-1}}}
-\label{eq:Hz}
-\end{align}
-since $\abs{\frac{2\tau-1}{2\tau+1}} < 1$, the ROC is $\abs{z} > 1$.
-\\
-\item How can you obtain $H(z)$ from $H(s)$? \\
-\solution We use the bilinear transformation. Setting
-\begin{align}
-s := \frac{2}{T}\frac{1 - z^{-1}}{1 + z^{-1}}
-\end{align}
-we get
-\begin{align}
-H(z) &= \frac{\frac{1}{R_2}}{\frac{1}{R_1} + \frac{1}{R_2} + \frac{2C_0}{T}\frac{1 - z^{-1}}{1 + z^{-1}}} \\
-&= \frac{T\tau\brak{1+z^{-1}}}{C_0R_2\brak{\brak{2\tau+T}-\brak{2\tau-T}z^{-1}}}
-\end{align}
-Setting $T = 1$ gives \eqref{eq:Hz}.
+The L-C network is shown in Fig. \ref{fig:cheby-filter}.
+\begin{figure}[!ht]
+    \centering
+    \begin{circuitikz} 
+        \draw (0,0) to[short, o-o] (7,0); 
+        \draw (1,0) to[C, l=4.43 mF] (1,2);
+        \draw (3.5,0) to[C, l=6.28 mF] (3.5,2);
+        \draw (0,2) to [short, o-] (1,2) to [L, l=3.16 mH] (3.5,2) to[L, l=2.23 mH] (6,2) to[short, -o] (7,2);
+    \end{circuitikz}
+    \caption{L-C Chebyshev Filter}
+    \label{fig:cheby-filter}
+\end{figure}
+\begin{figure}
+    \includegraphics[width=\columnwidth]{figs/5.4.png}
+    \caption{Simulation of Chebyshev filter.}
+    \label{fig:sim-cheby}
+\end{figure}
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/5.4.py
+\end{lstlisting}
+\begin{lstlisting}
+$ wget https://github.com/sirichandra003/EE3900/blob/master/Assignments/fourier%20series/codes/5.4.cir
+\end{lstlisting}
 \end{enumerate}
 \end{document}
